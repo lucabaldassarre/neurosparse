@@ -1,0 +1,19 @@
+#!/bin/sh
+#SBATCH --workdir /home/lbaldass/NEUROSPARSE/IMAGES_BLOCK_MASK/RR
+#SBATCH --nodes 1
+#SBATCH --ntasks 1
+#SBATCH --cpus-per-task 4
+#SBATCH --mem 8000
+#SBATCH --time 1-0
+#SBATCH --job-name RR
+#SBATCH --array=1-240
+
+module purge
+
+echo STARTING AT `date`
+echo "running on: "
+hostname
+
+matlab -nodisplay -nojvm -nodesktop -r "RR_val($SLURM_ARRAY_TASK_ID)"
+
+echo FINISHED at `date`

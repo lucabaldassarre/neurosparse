@@ -1,5 +1,5 @@
-load grey_prior
-load voxel_mask
+load DATA/grey_prior
+load DATA/voxel_mask
 
 % p = 0.75;
 p = 0.5;

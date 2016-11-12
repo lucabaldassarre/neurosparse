@@ -1,6 +1,6 @@
 function create_atlas_mask(p)
 
-fload = sprintf('grey_mask_p_%g.mat',p);
+fload = sprintf('DATA/grey_mask_p_%g.mat',p);
 load(fload);
 
 load('../atlas','ordered_atlas');

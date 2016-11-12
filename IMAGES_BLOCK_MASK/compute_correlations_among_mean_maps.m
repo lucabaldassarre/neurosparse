@@ -1,5 +1,5 @@
 %% Get gray map mask
-load masked_to_whole_p05;
+load DATA/masked_to_whole_p05;
 
 %%
 str_method  = {'LASSO','ENET','LAP','SLAP','TV','STV'};

@@ -1,7 +1,7 @@
-load coordenates_mask
+load DATA/coordenates_mask
 % p = 0.75;
 p = 0.5;
-load(sprintf('grey_mask_p_%g.mat',p));
+load(sprintf('DATA/grey_mask_p_%g.mat',p));
 coordenates_mask = coordenates_mask(idx_features,:);
 
 n = size(coordenates_mask,1);

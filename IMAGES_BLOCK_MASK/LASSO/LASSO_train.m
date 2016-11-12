@@ -4,29 +4,28 @@ function [] = LASSO_train(ks)
 % on Janaina's data on the cluster
 % id - task id
 
-ks = str2double(ks);
-ns = 16; %Number of subjects for test Leave-One-Subject-Out
-nsv = 15; %Number of subjects for validation Leave-One-Subject-Out
-step = 84;
-p = 0.5;
+ks      = str2double(ks);
+ns      = 16;   % Number of subjects for test Leave-One-Subject-Out
+nsv     = 15;   % Number of subjects for validation Leave-One-Subject-Out
+step    = 84;   % Number of samples per subject
+p       = 0.5;  % Threshold on grey matter mask
 
 % Optimization parameters
-tol_fista = 1e-5;
-maxiter_fista = 1e4;
+tol_fista       = 1e-5;
+maxiter_fista   = 1e4;
 
 % Regularization parameters
-nlambdas = 10;
-lambdas = logspace(log10(0.9), log10(1e-5), nlambdas);
+nlambdas    = 10;
+lambdas     = logspace(log10(0.9), log10(1e-5), nlambdas);
 
+% Load validation results
 fload = sprintf('RESULTS_VAL/LASSO_loo_errs_%d_%g.mat', ks, p);
-load(fload,'idx_best_regpar_accuracy','idx_best_regpar_dist_OC','idx_best_regpar_dist_corr');
+load(fload, 'idx_best_regpar_accuracy', 'idx_best_regpar_dist_OC', 'idx_best_regpar_dist_corr');
 
-%%
-
-load(sprintf('../c1_c3_data_mask_p_%g.mat',p),'X','Y');
+%% Load grey-matter-thresholded data
+load(sprintf('../c1_c3_data_mask_p_%g.mat',p), 'X', 'Y');
 
 %% CREATE TRAIN AND TEST SETS
-
 Xts = X(step*(ks-1)+1:step*ks,:);
 yts = Y(step*(ks-1)+1:step*ks,:);
 
@@ -36,9 +35,8 @@ ytr = Y(setdiff(1:size(X,1),step*(ks-1)+1:step*ks),:);
 clear X Y;
 
 %% Normalization
-
-means = mean(Xtr);
-stds = std(Xtr);
+means   = mean(Xtr);
+stds    = std(Xtr);
 
 Xtr = Xtr - repmat(means,size(Xtr,1),1);
 Xtr = Xtr./repmat(stds,size(Xtr,1),1);
@@ -48,7 +46,7 @@ Xts = Xts./repmat(stds,size(Xts,1),1);
 m = size(Xtr,1);
 n = size(Xtr,2);
 
-% Loads Lipschitz constant of gradient of empirical risk
+%% Loads Lipschitz constant of gradient of empirical risk
 % or computes it if does not exit
 fload = sprintf('../LIPSCHITZ/Li_loo_%d_p_%g.mat',ks, p);
 if exist(fload,'file')
@@ -61,27 +59,26 @@ else
    save(fload,'Li_X','time_Li');
 end
 
-%% REGULARIZATION PARAMETER
-
+%% SET REGULARIZATION PARAMETER
 lambda_max = max(abs(Xtr'*ytr))/m;
 
-regpar_accuracy = lambda_max*lambdas(idx_best_regpar_accuracy);
-regpar_dist_OC = lambda_max*lambdas(idx_best_regpar_dist_OC);
-regpar_dist_corr = lambda_max*lambdas(idx_best_regpar_dist_corr);
+regpar_accuracy     = lambda_max*lambdas(idx_best_regpar_accuracy);
+regpar_dist_OC      = lambda_max*lambdas(idx_best_regpar_dist_OC);
+regpar_dist_corr    = lambda_max*lambdas(idx_best_regpar_dist_corr);
 
 lambda_2 = 0;
 
-%%
+%% RUN FISTA SOLVER FOR ACCURACY-BASED MODEL SELECTION
 disp(datestr(now));
 fprintf('LASSO: Subject test loo = %d of %d - Accuracy \n',ks,ns)
 tic
-[alpha_accuracy iters_accuracy costs_accuracy] =...
+[alpha_accuracy, iters_accuracy, costs_accuracy] =...
           fista_enet(Xtr, ytr, regpar_accuracy, lambda_2, tol_fista, maxiter_fista, Li_X, zeros(n,1));
-time_accuracy = toc;
-yprev_accuracy = sign(Xts*alpha_accuracy);
-err_test_accuracy = sum(1-yprev_accuracy.*yts)/(2*size(yts,1));
+time_accuracy       = toc;
+yprev_accuracy      = sign(Xts*alpha_accuracy);
+err_test_accuracy   = sum(1-yprev_accuracy.*yts)/(2*size(yts,1));
 
-%%
+%% RUN FISTA SOLVER FOR OC-BASED MODEL SELECTION
 disp(datestr(now));
 fprintf('LASSO: Subject test loo = %d of %d - Distance OC\n',ks,ns)
 tic
@@ -99,7 +96,7 @@ else
 end
 time_dist_OC = toc;
 
-%%
+%% RUN FISTA SOLVER FOR CORRELATION-BASED MODEL SELECTION
 disp(datestr(now));
 fprintf('LASSO: Subject test loo = %d of %d - Distance correlation\n',ks,ns)
 tic
@@ -123,7 +120,7 @@ else
 end
 time_dist_corr = toc;
 
-
+%% CLEAR AND SAVE
 clear Xtr ytr Xts yts
 disp(datestr(now));
 fprintf('FINISHED!\n');

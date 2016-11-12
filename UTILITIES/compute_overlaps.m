@@ -1,4 +1,4 @@
-function [mean_O std_O mean_OC std_OC mean_OE std_OE] = compute_overlaps(support,n)
+function [mean_O, std_O, mean_OC, std_OC, mean_OE, std_OE] = compute_overlaps(support,n)
 
 % support is a cell array containing the support sets of each subject
 % n is the total number of voxels

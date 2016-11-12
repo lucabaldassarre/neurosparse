@@ -1,36 +1,38 @@
-function [beta1 t costs] =...
-    fista_laplacian(X, y, L, lambda, gamma, tol_fista, maxiter_fista, Li, alpha0)
+function [beta1, t, costs] =...
+    fista_enet(X, y, lambda_1, lambda_2, tol_fista, maxiter_fista, Li, alpha0)
 
 % Use FISTA to solve the problem
 %
-% argmin_{beta} 1/(2*m) ||X*beta-Y||^2 + gamma/2*x'*L*x +
-% lambda||x||_1
+% argmin_{beta} 1/(2*m) ||X*beta-Y||^2 + lambda_2/2 ||beta||_2^2 + lambda_1 ||beta||_1
 %
-% where L is the laplacian of the graph connecting the variables
 
 [m, n] = size(X);
 
-if nargin < 8
+if nargin < 7
     %Lipschitz constant of the gradient of the empirical risk
-    Li = eigs(X'*X,1,'LM')/m + gamma*eigs(L,1,'LM');
+    Li = eigs(X'*X,1,'LM')/m;
 end
-if nargin < 10
+% Add contribution due to the \ell_2 norm
+Li = Li + lambda_2;
+
+if nargin < 8
     alpha0 = zeros(n,1);
 end
 
+% If calling this function multiple time, better to compute this outside
+% lambda_1_max = max(abs(X'*y));
+% lambda_1 = lambda_1*lambda_1_max;
+
 % Gradient of empirical risk w.r.t. beta
-grad = @(z) X'*(X*z-y)/m + gamma*L*z;
-% Empirical Risk
-f = @(z) 0.5*sum((X*z-y).^2)/m + gamma/2*z'*L*z;
-% Penalty Term
-omega = @(z) lambda*sum(abs(z));
+grad = @(z) X'*(X*z-y)/m + lambda_2*z;
+% Objective function
+V = @(z) 0.5*sum((X*z-y).^2)/m + 0.5*lambda_2*sum(z.^2) + lambda_1*sum(abs(z));
 % Proxmap of Penalty term
-prox = @(z, c) max(abs(z)-lambda*c,0).*sign(z);
+prox = @(z, c) max(abs(z)-lambda_1*c,0).*sign(z);
 
 %Initializations
 beta0 = zeros(n,1);
 theta0 = 1;
-
 costs = zeros(maxiter_fista,1);
 
 for t = 1:maxiter_fista
@@ -42,7 +44,7 @@ for t = 1:maxiter_fista
     theta1 = (1+sqrt(1+4*theta0^2))/2;
     alpha1 = beta1 + (theta0-1)/theta1*(beta1-beta0);
     
-    costs(t) = f(beta1) + omega(beta1);
+    costs(t) = V(beta1);
 
     % STOPPING CRITERION (RELATIVE DIFFERENCE)
     if t > 1 && abs(costs(t-1)-costs(t))/costs(t-1) < tol_fista

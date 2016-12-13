@@ -4,7 +4,7 @@ addpath('../../UTILITIES/');
 addpath('../../SOLVERS/');
 % LASSO_val(id)
 % Executes LASSO regularization on Janaina's data on the cluster
-% id - task id
+% id - task id in [1, 240]
 
 % Data parameters
 id      = str2double(id);

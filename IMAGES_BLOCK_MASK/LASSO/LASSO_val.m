@@ -1,27 +1,29 @@
 function [] = LASSO_val(id)
 
-% neuro(id)
+addpath('../../UTILITIES/');
+addpath('../../SOLVERS/');
+% LASSO_val(id)
 % Executes LASSO regularization on Janaina's data on the cluster
 % id - task id
 
 % Data parameters
-id = str2double(id);
-ns = 16; %Number of subjects for test Leave-One-Subject-Out
-nsv = 15; %Number of subjects for validation Leave-One-Subject-Out
-step = 84;
+id      = str2double(id);
+ns      = 16; %Number of subjects for test Leave-One-Subject-Out
+nsv     = 15; %Number of subjects for validation Leave-One-Subject-Out
+step    = 84;
 
 % Optimization parameters
 % tol_fista = 1e-8;
-tol_fista = 1e-5;
-maxiter_fista = 1e4;
+tol_fista       = 1e-5;
+maxiter_fista   = 1e4;
 
-% Which threshold
+% Gray mask threshold
 % p = 0.75;
 p = 0.5;
 
 % Regularization parameters
-nlambdas = 10;
-lambdas = logspace(log10(0.9), log10(1e-5), nlambdas);
+nlambdas    = 10;
+lambdas     = logspace(log10(0.9), log10(1e-5), nlambdas);
 
 %% Find task indices - splitting jobs by subjects
 ks = ceil(id/nsv); %Subject out
@@ -34,7 +36,7 @@ ksv = temp;
 %% CREATE TRAIN AND TEST SETS
 % Load the data
 
-load(sprintf('../c1_c3_data_mask_p_%g.mat',p));
+load(sprintf('../DATA/c1_c3_data_mask_p_%g.mat',p));
 
 %Xts = X(step*(ks-1)+1:step*ks,:);
 %yts = Y(step*(ks-1)+1:step*ks,:);
@@ -59,10 +61,10 @@ Xtr = Xtr./repmat(stds,size(Xtr,1),1);
 Xva = Xva - repmat(means,size(Xva,1),1);
 Xva = Xva./repmat(stds,size(Xva,1),1);
 
-[m n] = size(Xtr);
+[m, n] = size(Xtr);
 
 % Loads Lipschitz constant of gradient of empirical risk
-fload = sprintf('../LIPSCHITZ/Li_loo_%d_val_%d_p_%g.mat',ks, ksv, p);
+fload = sprintf('../DATA/LIPSCHITZ/Li_loo_%d_val_%d_p_%g.mat',ks, ksv, p);
 if exist(fload,'file')
    load(fload,'Li_X');
 else
@@ -74,11 +76,11 @@ else
 end
 
 
-alpha = zeros(n,nlambdas);
-t = zeros(nlambdas,1);
-costs = cell(nlambdas,1);
-time = zeros(nlambdas,1);
-yprev = zeros(size(Xva,1),nlambdas);
+alpha   = zeros(n,nlambdas);
+t       = zeros(nlambdas,1);
+costs   = cell(nlambdas,1);
+time    = zeros(nlambdas,1);
+yprev   = zeros(size(Xva,1),nlambdas);
 err_val = zeros(nlambdas,1);
 
 lambda_max = max(abs(Xtr'*ytr))/m; %See Osborne et al.,On the LASSO and its Dual, 1999, where they don't have the 1/m term in front of the empirical risk
@@ -91,10 +93,10 @@ for klambda = 1:nlambdas
    fprintf('LASSO: Subject test loo = %d of %d, Subject val loo = %d of %d, Reg par = %d of %d\n',ks,ns,ksv,nsv, klambda,nlambdas);
    lambda = lambdas(klambda)*lambda_max;
    if klambda == 1
-      [alpha(:,klambda) t(klambda) costs{klambda}] =...
+      [alpha(:,klambda), t(klambda), costs{klambda}] =...
           fista_enet(Xtr, ytr, lambda, lambda_2, tol_fista, maxiter_fista, Li_X, zeros(n,1));
    else % Use Warm restart
-      [alpha(:,klambda) t(klambda) costs{klambda}] =...
+      [alpha(:,klambda), t(klambda), costs{klambda}] =...
           fista_enet(Xtr, ytr, lambda, lambda_2, tol_fista, maxiter_fista, Li_X, alpha(:,klambda-1));
    end
    time(klambda) = toc;

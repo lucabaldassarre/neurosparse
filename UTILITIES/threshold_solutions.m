@@ -1,7 +1,10 @@
-function alpha = threshold_solutions(alpha)
+function alpha = threshold_solutions(alpha, threshold)
+
+if nargin < 2
+    threshold = 1e-4;
+end
 
 nlambda = size(alpha,2);
-threshold = 1e-4;
 
 for klambda = 1:nlambda
    [a, b] = sort(abs(alpha(:,klambda)));

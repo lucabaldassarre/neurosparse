@@ -8,7 +8,7 @@ fileList    = dir('RESULTS_VAL\*.mat');
 nFiles      = numel(fileList);
 
 runTasksId = zeros(nFiles,1);
-for kFile = 1:fileList
+for kFile = 1:nFiles
     tmp = sscanf(fileList(kFile).name, 'LASSO_loo_%d_val_%d_tol_%g_p_%g.mat');
     ks  = tmp(1);
     ksv = tmp(2);
@@ -18,7 +18,9 @@ end
 
 %% Re-Run
 newTasks = setdiff(1:240, runTasksId);
+numNewTasks = numel(newTasks);
 
-parfor kTask = newTasks
-    LASSO_val(num2str(kTask));
+parfor kTask = 1:numNewTasks
+    id = num2str(newTasks(kTask));
+    LASSO_val(id);
 end

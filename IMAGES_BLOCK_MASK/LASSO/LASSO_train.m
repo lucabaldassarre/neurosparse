@@ -126,4 +126,3 @@ disp(datestr(now));
 fprintf('FINISHED!\n');
 fsave = sprintf('RESULTS_TRAIN/LASSO_loo_%d_p_%g.mat', ks, p);
 save(fsave);
-exit

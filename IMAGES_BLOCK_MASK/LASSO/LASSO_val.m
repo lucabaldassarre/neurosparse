@@ -110,4 +110,3 @@ disp(datestr(now));
 disp('FINISHED!');
 fsave = sprintf('RESULTS_VAL/LASSO_loo_%d_val_%d_tol_%g_p_%g.mat', ks, ksv, tol_fista, p);
 save(fsave);
-exit

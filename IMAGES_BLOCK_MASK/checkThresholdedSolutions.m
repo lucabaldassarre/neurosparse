@@ -1,10 +1,14 @@
-thresholds = [1e-5, 1e-4, 1e-3, 1e-2, 5e-2];
-nT = numel(thresholds);
+addpath('../UTILITIES/');
+thresholds  = [1e-5, 1e-4, 1e-3, 1e-2, 5e-2];
+nT          = numel(thresholds);
+nPars       = 10;
 
-for kPar = 1:10
+sparsity = zeros(nT+1, nPars);
+
+for kPar = 1:nPars
     for kT = 1:nT
         a = threshold_solutions(alpha(:,kPar), thresholds(kT));
-        sparsityT(kT, kPar) = nnz(a)/numel(a)*100;
+        sparsity(kT+1, kPar) = nnz(a)/numel(a)*100;
     end
-    sparsity(kPar) = nnz(alpha(:,kPar))/numel(alpha(:,kPar))*100;
+    sparsity(1, kPar) = nnz(alpha(:,kPar))/numel(alpha(:,kPar))*100;
 end

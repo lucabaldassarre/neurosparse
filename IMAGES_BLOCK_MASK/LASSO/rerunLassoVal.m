@@ -1,4 +1,6 @@
 %% Set up
+addpath('../../UTILITIES/');
+addpath('../../SOLVERS/');
 ns      = 16; %Number of subjects for test Leave-One-Subject-Out
 nsv     = 15; %Number of subjects for validation Leave-One-Subject-Out
 nTasks  = 240; 

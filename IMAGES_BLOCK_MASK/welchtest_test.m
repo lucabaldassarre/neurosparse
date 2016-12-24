@@ -1,5 +1,6 @@
 %% Load data
 load('../RESULTS/results_mask.mat')
+addpath('../UTILITIES/');
 
 %% Compare new implementation of Welch's ttest to Matlab's
 % Note that Matlab's requires the entire vector, while the new requires
@@ -154,3 +155,18 @@ s(2)    = block_dist_OC(modelId, 7);
 N(2)    = 16;
 
 [h, p, t, nu] = welchtest(mu, s, N)
+
+%% Compare OC between SLAP and ENET using Acc/OC
+mu(1)   = block_dist_OC(8, 10);
+s(1)    = block_dist_OC(8, 11);
+N(1)    = 16;
+
+mu(2)   = block_dist_OC(5, 10);
+s(2)    = block_dist_OC(5, 11);
+N(2)    = 16;
+
+[h, p, t, nu] = welchtest(mu, s, N)
+% h =
+%    1
+% p =
+%     0.0030
